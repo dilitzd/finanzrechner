@@ -40,7 +40,7 @@
     const o = {};
     sek.querySelectorAll("[data-f]").forEach((el) => {
       const f = el.dataset.f;
-      if (el.classList.contains("segment")) o[f] = el.querySelector(".an").dataset.v;
+      if (el.classList.contains("wahl")) o[f] = el.querySelector(".an").dataset.v;
       else if (el.type === "checkbox") o[f] = el.checked;
       else o[f] = el.value;
     });
@@ -51,7 +51,7 @@
     sek.querySelectorAll("[data-f]").forEach((el) => {
       const f = el.dataset.f;
       if (!(f in o)) return;
-      if (el.classList.contains("segment"))
+      if (el.classList.contains("wahl"))
         el.querySelectorAll("button").forEach((b) => b.classList.toggle("an", b.dataset.v === o[f]));
       else if (el.type === "checkbox") el.checked = !!o[f];
       else el.value = o[f];
@@ -61,10 +61,77 @@
   // ---------- Darstellung ----------
   function werte(sek, liste) {
     sek.querySelector("[data-ergebnis]").innerHTML = liste
-      .map((w) => `<div class="wert${w.akzent ? " akzent" : ""}"><div class="name">${w.name}</div>` +
-        `<div class="zahl">${w.zahl}</div>${w.zusatz ? `<div class="zusatz">${w.zusatz}</div>` : ""}</div>`)
+      .map((w, i) => `<div class="zeile${i === 0 ? " gross" : ""}"><span>${w.name}</span>` +
+        `<span class="zahl">${w.zahl}${w.zusatz ? `<small>${w.zusatz}</small>` : ""}</span></div>`)
       .join("");
   }
+
+  // Gestapelte Säulen je Jahr: unten Blau (Tilgung/Kapital/Einzahlungen), oben Bernstein (Zinsen)
+  const fmt0 = new Intl.NumberFormat("de-DE", { maximumFractionDigits: 0 });
+  function grafik(sek, daten, namen, zusatzName) {
+    const box = sek.querySelector("[data-grafik]");
+    if (!daten.length) { box.innerHTML = ""; return; }
+    const B = 600, H = 210, L = 52, O = 8, U = 22;
+    const max = Math.max(...daten.map((d) => d.a + d.b)) || 1;
+    const stufe = (() => { const roh = max / 4, p = Math.pow(10, Math.floor(Math.log10(roh)));
+      return [1, 2, 2.5, 5, 10].map((f) => f * p).find((x) => x >= roh); })();
+    const oben = Math.ceil(max / stufe) * stufe;
+    const y = (v) => O + (H - O - U) * (1 - v / oben);
+    const n = daten.length, breite = (B - L) / n, sb = Math.max(2, Math.min(28, breite - 2));
+    let svg = "";
+    for (let v = 0; v <= oben + 1e-9; v += stufe)
+      svg += `<line x1="${L}" x2="${B}" y1="${y(v)}" y2="${y(v)}" stroke="rgba(0,0,0,${v ? 0.07 : 0.25})"/>` +
+        `<text class="achse" x="${L - 6}" y="${y(v) + 4}" text-anchor="end">${fmt0.format(v)}</text>`;
+    const r = Math.min(3, sb / 2);
+    const saeule = (x, y0, y1, farbe, rund) => {
+      const h = y0 - y1; if (h <= 0.3) return "";
+      if (!rund || h < r) return `<rect x="${x}" y="${y1}" width="${sb}" height="${h}" fill="${farbe}"/>`;
+      return `<path d="M${x},${y0}V${y1 + r}Q${x},${y1} ${x + r},${y1}H${x + sb - r}Q${x + sb},${y1} ${x + sb},${y1 + r}V${y0}Z" fill="${farbe}"/>`;
+    };
+    const jede = Math.ceil(n / 8);
+    daten.forEach((d, k) => {
+      const x = L + k * breite + (breite - sb) / 2;
+      const ya = y(d.a), yb = y(d.a + d.b);
+      svg += saeule(x, y(0), ya, "var(--blau)", d.b <= 0);
+      svg += saeule(x, ya - (d.a > 0 && d.b > 0 ? 1 : 0), yb, "var(--bernstein)", true);
+      if (k % jede === 0 || k === n - 1)
+        svg += `<text class="achse" x="${x + sb / 2}" y="${H - 6}" text-anchor="middle">${d.jahr}</text>`;
+      svg += `<rect data-k="${k}" x="${L + k * breite}" y="0" width="${breite}" height="${H - U}" fill="transparent"/>`;
+    });
+    box.innerHTML = `<svg viewBox="0 0 ${B} ${H}" role="img" aria-label="${namen[0]} und ${namen[1]} je Jahr">${svg}</svg>` +
+      `<div class="legende"><span><i style="background:var(--blau)"></i>${namen[0]}</span>` +
+      `<span><i style="background:var(--bernstein)"></i>${namen[1]}</span></div><div class="tipp" hidden></div>`;
+    const tipp = box.querySelector(".tipp"), el = box.querySelector("svg");
+    const zeigeTipp = (ev) => {
+      const t = ev.target.closest("[data-k]");
+      if (!t) { tipp.hidden = true; return; }
+      const d = daten[+t.dataset.k];
+      tipp.innerHTML = `<b>Jahr ${d.jahr}</b>${namen[0]} ${fmtE(d.a)}<br>${namen[1]} ${fmtE(d.b)}` +
+        (zusatzName ? `<br><span>${zusatzName} ${fmtE(d.c)}</span>` : "");
+      tipp.hidden = false;
+      const rb = box.getBoundingClientRect(), rt = t.getBoundingClientRect();
+      const mitte = rt.left + rt.width / 2 - rb.left;
+      tipp.style.left = Math.max(0, Math.min(rb.width - tipp.offsetWidth, mitte - tipp.offsetWidth / 2)) + "px";
+      tipp.style.top = "-6px";
+      el.querySelectorAll("[data-k]").forEach((x) => x.setAttribute("fill", x === t ? "rgba(0,0,0,0.04)" : "transparent"));
+    };
+    el.addEventListener("pointermove", zeigeTipp);
+    el.addEventListener("pointerdown", zeigeTipp);
+    el.addEventListener("pointerleave", () => { tipp.hidden = true;
+      el.querySelectorAll("[data-k]").forEach((x) => x.setAttribute("fill", "transparent")); });
+  }
+  function jeJahr(zeilen, m, nrVon, a, b, c) {
+    const out = [];
+    zeilen.forEach((z) => {
+      const nr = nrVon(z); if (nr == null) return;
+      const j = Math.ceil(nr / m);
+      let d = out[out.length - 1];
+      if (!d || d.jahr !== j) { d = { jahr: j, a: 0, b: 0, c: 0 }; out.push(d); }
+      d.a = R.r2(d.a + a(z)); d.b = R.r2(d.b + b(z)); d.c = c(z);
+    });
+    return out;
+  }
+
   function tabelle(sek, kopf, zeilen, fuss) {
     const th = kopf.map((k) => `<th>${k}</th>`).join("");
     const tr = zeilen.map((z) => `<tr class="${z.klasse || ""}">${z.zellen.map((c, i) =>
@@ -79,6 +146,7 @@
     if (text) {
       sek.querySelector("[data-ergebnis]").innerHTML = "";
       sek.querySelector("[data-tabelle]").innerHTML = "";
+      sek.querySelector("[data-grafik]").innerHTML = "";
     }
     return !!text;
   }
@@ -114,6 +182,8 @@
         liste.splice(1, 0, { name: "Zinsrate Vorfinanzierung", zahl: fmtE(e.zeilen[0].rate), zusatz: p.vorPerioden + " Perioden" });
       if (e.rateNeu) liste.splice(1, 0, { name: "Rate nach Sondertilgung", zahl: fmtE(e.rateNeu), akzent: true });
       werte(sek, liste);
+      grafik(sek, jeJahr(e.zeilen, p.m, (z) => z.nr, (z) => z.tilgung + z.sonder, (z) => z.zins, (z) => z.rest),
+        ["Tilgung", "Zinsen"], "Restschuld");
 
       const mitDatum = !!p.start;
       const kopf = ["Nr.", ...(mitDatum ? ["Datum"] : []), "Rate", "Zins", "Tilgung", ...(e.sonder ? ["Sondertilg."] : []), "Restschuld"];
@@ -161,6 +231,9 @@
         { name: "Einzahlungen gesamt", zahl: fmtE(e.einzahlungen), zusatz: p.startkapital ? "inkl. Startkapital" : "" },
         { name: "Zinsertrag", zahl: fmtE(e.zinsen) },
       ]);
+      let sumE = p.startkapital, sumZ = 0;
+      grafik(sek, e.jahre.map((j) => { sumE = R.r2(sumE + j.einzahlung); sumZ = R.r2(sumZ + j.zins);
+        return { jahr: j.jahr, a: sumE, b: sumZ, c: j.stand }; }), ["Einzahlungen", "Zinsen"], "Kontostand");
       tabelle(sek, ["Jahr", "Einzahlungen", "Zinsen", "Kontostand"],
         e.jahre.map((j) => ({ links: [0], zellen: [j.jahr, fmt(j.einzahlung), fmt(j.zins), fmt(j.stand)] })),
         ["Summe", fmt(R.r2(p.rate * e.anzahl)), fmt(e.zinsen), fmt(e.endwert)]);
@@ -207,6 +280,8 @@
         { name: "Zinsen gesamt", zahl: fmtE(e.zinsen) },
         { name: "Gesamtkosten", zahl: fmtE(e.gesamt), zusatz: "Mehrkosten " + fmtE(e.mehrkosten) },
       ]);
+      grafik(sek, jeJahr(e.zeilen, p.m, (z) => (z.art === "Rate" ? z.nr : null), (z) => z.kapital, (z) => z.zins, (z) => z.rest),
+        ["Kapital", "Zinsen"], "Restschuld");
       const mitDatum = !!p.start;
       const kopf = ["Nr.", ...(mitDatum ? ["Datum"] : []), "Art", "Zahlung", "Zins", "Kapital", "Restschuld"];
       tabelle(sek, kopf, e.zeilen.map((z) => ({
@@ -275,7 +350,7 @@
       fehler(sek, err.message);
       setTimeout(() => berechne(sek), 4000);
     } finally {
-      knopf.textContent = "Excel";
+      knopf.textContent = "Excel ↓";
     }
   }
 
@@ -293,7 +368,7 @@
     const neu = () => { clearTimeout(timer); timer = setTimeout(() => berechne(sek), 150); };
     sek.addEventListener("input", neu);
     sek.addEventListener("change", neu);
-    sek.querySelectorAll(".segment").forEach((seg) =>
+    sek.querySelectorAll(".wahl").forEach((seg) =>
       seg.addEventListener("click", (ev) => {
         const b = ev.target.closest("button");
         if (!b) return;
@@ -307,7 +382,6 @@
   function zeige(tab) {
     document.querySelectorAll("nav button").forEach((b) => b.setAttribute("aria-selected", String(b.dataset.tab === tab)));
     sektionen.forEach((s) => (s.hidden = s.id !== tab));
-    document.getElementById("rubrik").textContent = document.getElementById(tab).dataset.titel;
     speicher.schreiben("tab", tab);
   }
   document.querySelector("nav").addEventListener("click", (ev) => {

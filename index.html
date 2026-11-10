@@ -5,99 +5,120 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Finanzrechner</title>
 <meta name="description" content="Französischer Tilgungsplan, Endwert periodischer Einzahlungen und Leasingplan.">
-<meta name="theme-color" content="#2A2A2A">
+<meta name="theme-color" content="#F5F3EE">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="Finanzrechner">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="icon-180.png">
 <link rel="icon" href="icon-180.png">
 <style>
   :root {
-    --hell: #FFFFFF; --text: #D0D0D0; --grau: #8E8E8E;
-    --sand: #C8AA80; --gold: #D4AF37; --blau: #78D2F0; --gruen: #A8E6A1; --rot: #F28B82;
-    color-scheme: dark;
-    --karte: rgba(255,255,255,0.06); --linie: rgba(255,255,255,0.14); --feld: rgba(0,0,0,0.28);
+    color-scheme: light;
+    --grund: #F5F3EE; --grund2: #ECE8E1;
+    --tinte: #1E1E1E; --text: #3A3A3A; --grau: #8A8782; --linie: rgba(0,0,0,0.09);
+    --sand: #A8875A;
+    --blau: #1F78B4; --bernstein: #BF7A12;   /* Grafik: Tilgung/Kapital, Zinsen */
   }
   * { box-sizing: border-box; }
-  html { background: #1C1C1C; }
+  html { background: var(--grund2); }
   body {
-    margin: 0; min-height: 100vh; color: var(--text);
-    font: 16px/1.4 -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, sans-serif;
-    background: linear-gradient(180deg, #3C3C3C 0%, #1C1C1C 420px) no-repeat, #1C1C1C;
+    margin: 0; min-height: 100vh; color: var(--tinte);
+    font: 17px/1.35 -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, sans-serif;
+    background: linear-gradient(180deg, var(--grund) 0%, var(--grund2) 100%) fixed;
     -webkit-text-size-adjust: 100%;
     padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
   }
-  main { max-width: 960px; margin: 0 auto; padding: 16px 16px 40px; }
-  header { display: flex; align-items: baseline; justify-content: space-between; margin: 8px 0 14px; }
-  h1 { font-size: 26px; font-weight: 300; color: var(--hell); margin: 0; letter-spacing: .2px; }
-  .rubrik { font-size: 11px; font-weight: 600; letter-spacing: 1px; text-transform: uppercase; color: var(--sand); }
+  main { max-width: 640px; margin: 0 auto; padding: 18px 20px 48px; }
 
-  nav { display: flex; gap: 6px; background: var(--feld); border-radius: 12px; padding: 4px; margin-bottom: 16px; }
+  .rubrik { font-size: 12.5px; font-weight: 600; letter-spacing: .6px; text-transform: uppercase; color: var(--sand); }
+  header { display: flex; justify-content: space-between; align-items: baseline; margin: 6px 0 14px; }
+  header .rubrik { font-size: 15px; }
+
+  nav { display: flex; gap: 22px; margin-bottom: 26px; }
   nav button {
-    flex: 1; border: 0; background: transparent; color: var(--grau); font: inherit; font-size: 15px;
-    padding: 10px 4px; border-radius: 9px; cursor: pointer;
+    border: 0; background: none; padding: 4px 0; font: inherit; font-size: 22px; font-weight: 600;
+    color: #B9B5AE; cursor: pointer;
   }
-  nav button[aria-selected="true"] { background: rgba(255,255,255,0.12); color: var(--hell); font-weight: 600; }
+  nav button[aria-selected="true"] { color: var(--tinte); }
 
-  .karte { background: var(--karte); border: 1px solid var(--linie); border-radius: 14px; padding: 14px; margin-bottom: 14px; }
-  .karte > .rubrik { display: block; margin-bottom: 10px; }
-  .gitter { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; }
-  label { display: flex; flex-direction: column; gap: 5px; font-size: 13px; color: var(--grau); }
-  input, select {
-    width: 100%; font: inherit; font-size: 17px; color: var(--hell); background: var(--feld);
-    border: 1px solid var(--linie); border-radius: 10px; padding: 10px 11px; min-height: 44px;
-    -webkit-appearance: none; appearance: none;
+  h2 { margin: 26px 0 4px; }
+  .liste { border-top: 1px solid var(--linie); }
+  .zeile {
+    display: flex; align-items: center; justify-content: space-between; gap: 12px;
+    min-height: 48px; border-bottom: 1px solid var(--linie); font-size: 17px; color: var(--text);
   }
-  select { background-image: linear-gradient(45deg, transparent 50%, var(--grau) 50%), linear-gradient(135deg, var(--grau) 50%, transparent 50%);
-    background-position: calc(100% - 17px) 50%, calc(100% - 12px) 50%; background-size: 5px 5px; background-repeat: no-repeat; padding-right: 28px; }
-  input[type="date"] { min-width: 0; }
-  input:focus, select:focus { outline: 2px solid var(--sand); outline-offset: 0; }
-  .mit-einheit { display: flex; gap: 6px; }
-  .mit-einheit select { width: 74px; flex: none; }
-  .schalter { flex-direction: row; align-items: center; gap: 10px; color: var(--text); font-size: 15px; min-height: 44px; }
-  .schalter input { width: 22px; min-height: 22px; height: 22px; padding: 0; accent-color: var(--sand); -webkit-appearance: checkbox; appearance: auto; flex: none; }
-  .segment { display: flex; background: var(--feld); border: 1px solid var(--linie); border-radius: 10px; padding: 3px; min-height: 44px; }
-  .segment button { flex: 1; border: 0; background: transparent; color: var(--grau); font: inherit; font-size: 14px; border-radius: 7px; cursor: pointer; }
-  .segment button.an { background: rgba(255,255,255,0.12); color: var(--hell); }
-  .hinweis { font-size: 12px; color: var(--grau); margin-top: 10px; }
-  .fehler { color: var(--gold); font-size: 14px; margin: 0 0 14px; }
-
-  .ergebnis { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; }
-  .wert { min-width: 0; }
-  .wert { background: var(--feld); border-radius: 12px; padding: 10px 12px; }
-  .wert .name { font-size: 12px; color: var(--grau); }
-  .wert .zahl { font-size: clamp(17px, 5vw, 22px); font-weight: 300; color: var(--hell); font-variant-numeric: tabular-nums; white-space: nowrap; }
-  .wert.akzent .zahl { color: var(--sand); }
-  .wert .zusatz { font-size: 12px; color: var(--grau); }
-
-  .kopf { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; gap: 10px; }
-  .knopf {
-    border: 1px solid var(--sand); color: var(--sand); background: transparent; border-radius: 10px;
-    font: inherit; font-size: 14px; font-weight: 600; padding: 9px 14px; min-height: 40px; cursor: pointer; white-space: nowrap;
+  .zeile > span:first-child { flex: 1 1 auto; }
+  .zeile input, .zeile select {
+    border: 0; background: none; font: inherit; font-weight: 600; color: var(--tinte);
+    text-align: right; padding: 10px 0; min-height: 44px; -webkit-appearance: none; appearance: none;
   }
-  .knopf:active { background: rgba(200,170,128,0.15); }
-  .tabelle { overflow: auto; max-height: 70vh; border-radius: 10px; border: 1px solid var(--linie); -webkit-overflow-scrolling: touch; }
-  table { border-collapse: collapse; width: 100%; font-size: 13px; font-variant-numeric: tabular-nums; }
-  th, td { padding: 7px 9px; text-align: right; white-space: nowrap; border-bottom: 1px solid rgba(255,255,255,0.07); }
-  th { position: sticky; top: 0; background: #2E2E2E; color: var(--grau); font-weight: 600; font-size: 12px; z-index: 1; }
-  th:first-child, td:first-child { text-align: left; }
+  .zeile input { width: 9.5em; }
+  .zeile input[type="date"] { width: auto; min-width: 8.5em; }
+  .zeile select { text-align-last: right; padding-right: 14px; cursor: pointer;
+    background: linear-gradient(45deg, transparent 50%, var(--grau) 50%) right 4px center / 5px 5px no-repeat,
+                linear-gradient(135deg, var(--grau) 50%, transparent 50%) right 0 center / 5px 5px no-repeat; }
+  .zeile input:focus, .zeile select:focus { outline: none; color: var(--sand); }
+  .einheit { display: flex; align-items: center; gap: 8px; }
+  .einheit input { width: 6.5em; }
+  .einheit select { font-weight: 400; color: var(--grau); }
+  .wahl { display: flex; gap: 14px; }
+  .wahl button { border: 0; background: none; font: inherit; font-size: 15px; color: var(--grau); padding: 10px 0; cursor: pointer; }
+  .wahl button.an { color: var(--tinte); font-weight: 600; }
+  .zeile input[type="checkbox"] {
+    width: 46px; height: 28px; min-height: 0; border-radius: 14px; background: #D8D4CC; position: relative; cursor: pointer; padding: 0; flex: none;
+    transition: background .15s;
+  }
+  .zeile input[type="checkbox"]::after {
+    content: ""; position: absolute; top: 3px; left: 3px; width: 22px; height: 22px; border-radius: 50%; background: #fff; transition: left .15s;
+  }
+  .zeile input[type="checkbox"]:checked { background: var(--sand); }
+  .zeile input[type="checkbox"]:checked::after { left: 21px; }
+  .hinweis { font-size: 13px; color: var(--grau); margin: 8px 0 0; }
+  .fehler { color: #B3261E; font-size: 15px; margin: 18px 0 0; }
+
+  /* Ergebnis */
+  .ergebnis .zeile .zahl { font-weight: 600; color: var(--tinte); font-variant-numeric: tabular-nums; white-space: nowrap; text-align: right; }
+  .ergebnis .zeile .zahl small { display: block; font-size: 12.5px; font-weight: 400; color: var(--grau); }
+  .ergebnis .gross { min-height: 64px; }
+  .ergebnis .gross .zahl { font-size: 30px; font-weight: 600; letter-spacing: -.3px; }
+
+  /* Grafik */
+  .grafik { position: relative; margin-top: 10px; }
+  .grafik svg { display: block; width: 100%; height: auto; overflow: visible; }
+  .grafik .achse { font-size: 11px; fill: var(--grau); font-variant-numeric: tabular-nums; }
+  .legende { display: flex; gap: 16px; font-size: 13px; color: var(--text); margin-top: 8px; }
+  .legende i { display: inline-block; width: 10px; height: 10px; border-radius: 3px; margin-right: 6px; vertical-align: -1px; }
+  .tipp {
+    position: absolute; pointer-events: none; background: #fff; color: var(--tinte); font-size: 13px; line-height: 1.4;
+    padding: 8px 10px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,.12); white-space: nowrap; z-index: 2;
+  }
+  .tipp b { display: block; color: var(--sand); font-size: 12px; text-transform: uppercase; letter-spacing: .5px; }
+  .tipp span { color: var(--grau); }
+
+  /* Plan */
+  .kopf { display: flex; justify-content: space-between; align-items: baseline; }
+  .knopf { border: 0; background: none; font: inherit; font-size: 15px; font-weight: 600; color: var(--sand); padding: 8px 0; cursor: pointer; }
+  .tabelle { overflow: auto; max-height: 70vh; margin-top: 4px; -webkit-overflow-scrolling: touch; }
+  table { border-collapse: collapse; width: 100%; font-size: 13.5px; font-variant-numeric: tabular-nums; }
+  th, td { padding: 8px 6px; text-align: right; white-space: nowrap; border-bottom: 1px solid var(--linie); }
+  th { position: sticky; top: 0; background: var(--grund); color: var(--sand); font-weight: 600; font-size: 11.5px;
+       text-transform: uppercase; letter-spacing: .4px; z-index: 1; }
+  th:first-child, td:first-child { text-align: left; padding-left: 0; }
   td.links { text-align: left; }
   tr.vor td { color: var(--grau); }
-  tr.sonder td { color: var(--gruen); }
-  tr.anz td, tr.kauf td { color: var(--sand); }
-  tfoot td { color: var(--hell); font-weight: 600; background: #2E2E2E; position: sticky; bottom: 0; }
+  tr.sonder td, tr.anz td, tr.kauf td { color: var(--sand); }
+  tfoot td { font-weight: 600; background: var(--grund2); position: sticky; bottom: 0; }
 
-  footer { font-size: 11px; color: var(--grau); margin-top: 18px; line-height: 1.5; }
+  footer { font-size: 12.5px; color: var(--grau); margin-top: 30px; line-height: 1.5; }
   [hidden] { display: none !important; }
 </style>
 </head>
 <body>
 <main>
   <header>
-    <h1>Finanzrechner</h1>
-    <span class="rubrik" id="rubrik">Tilgungsplan</span>
+    <span class="rubrik">Finanzrechner</span>
   </header>
 
   <nav role="tablist">
@@ -107,86 +128,85 @@
   </nav>
 
   <!-- Tilgungsplan -->
-  <section id="tilgung" data-titel="Tilgungsplan">
-    <div class="karte">
-      <span class="rubrik">Darlehen</span>
-      <div class="gitter">
-        <label>Betrag (€)<input data-f="betrag" inputmode="decimal" value="100.000"></label>
-        <label>Zinssatz p.a. (%)<input data-f="zins" inputmode="decimal" value="4"></label>
-        <label>Laufzeit (Jahre)<input data-f="jahre" inputmode="decimal" value="20"></label>
-        <label>Rhythmus<select data-f="m">
-          <option value="12">monatlich</option><option value="4">vierteljährlich</option>
-          <option value="2">halbjährlich</option><option value="1">jährlich</option></select></label>
-        <label>Auszahlung am<input data-f="start" type="date"></label>
-        <label>Vorfinanzierung (Perioden)<input data-f="vor" inputmode="numeric" value="0"></label>
-      </div>
-      <p class="hinweis">Laufzeit = Tilgungsphase. In der Vorfinanzierung werden nur Zinsen gezahlt.</p>
+  <section id="tilgung">
+    <div class="rubrik">Darlehen · französischer Tilgungsplan</div>
+    <div class="liste">
+      <label class="zeile"><span>Betrag (€)</span><input data-f="betrag" inputmode="decimal" value="100.000"></label>
+      <label class="zeile"><span>Zinssatz p.a. (%)</span><input data-f="zins" inputmode="decimal" value="4"></label>
+      <label class="zeile"><span>Laufzeit (Jahre)</span><input data-f="jahre" inputmode="decimal" value="20"></label>
+      <label class="zeile"><span>Rhythmus</span><select data-f="m">
+        <option value="12">monatlich</option><option value="4">vierteljährlich</option>
+        <option value="2">halbjährlich</option><option value="1">jährlich</option></select></label>
+      <label class="zeile"><span>Auszahlung am</span><input data-f="start" type="date"></label>
+      <label class="zeile"><span>Vorfinanzierung (Perioden)</span><input data-f="vor" inputmode="numeric" value="0"></label>
     </div>
-    <div class="karte">
-      <span class="rubrik">Sondertilgung (optional)</span>
-      <div class="gitter">
-        <label>Betrag (€)<input data-f="sBetrag" inputmode="decimal" value="0"></label>
-        <label>Nach Rate Nr.<input data-f="sNr" inputmode="numeric" value="0"></label>
-        <label>Danach<div class="segment" data-f="sModus">
-          <button type="button" data-v="rate" class="an">Rate senken</button>
-          <button type="button" data-v="laufzeit">Laufzeit kürzen</button></div></label>
-      </div>
+    <p class="hinweis">Laufzeit = Tilgungsphase; in der Vorfinanzierung nur Zinsen.</p>
+
+    <h2 class="rubrik">Sondertilgung</h2>
+    <div class="liste">
+      <label class="zeile"><span>Betrag (€)</span><input data-f="sBetrag" inputmode="decimal" value="0"></label>
+      <label class="zeile"><span>Nach Rate Nr.</span><input data-f="sNr" inputmode="numeric" value="0"></label>
+      <div class="zeile"><span>Danach</span><div class="wahl" data-f="sModus">
+        <button type="button" data-v="rate" class="an">Rate senken</button>
+        <button type="button" data-v="laufzeit">Laufzeit kürzen</button></div></div>
     </div>
+
     <p class="fehler" data-fehler hidden></p>
-    <div class="karte"><span class="rubrik">Ergebnis</span><div class="ergebnis" data-ergebnis></div></div>
-    <div class="karte">
-      <div class="kopf"><span class="rubrik">Plan</span><button class="knopf" data-export>Excel</button></div>
-      <div class="tabelle" data-tabelle></div>
-    </div>
+    <h2 class="rubrik">Ergebnis</h2>
+    <div class="liste ergebnis" data-ergebnis></div>
+    <h2 class="rubrik">Verlauf je Jahr</h2>
+    <div class="grafik" data-grafik></div>
+    <div class="kopf"><h2 class="rubrik">Plan</h2><button class="knopf" data-export>Excel ↓</button></div>
+    <div class="tabelle" data-tabelle></div>
   </section>
 
   <!-- Endwert -->
-  <section id="endwert" data-titel="Endwert" hidden>
-    <div class="karte">
-      <span class="rubrik">Sparplan</span>
-      <div class="gitter">
-        <label>Einzahlung je Periode (€)<input data-f="rate" inputmode="decimal" value="200"></label>
-        <label>Zinssatz p.a. (%)<input data-f="zins" inputmode="decimal" value="3"></label>
-        <label>Dauer (Jahre)<input data-f="jahre" inputmode="decimal" value="10"></label>
-        <label>Rhythmus<select data-f="m">
-          <option value="12">monatlich</option><option value="4">vierteljährlich</option>
-          <option value="2">halbjährlich</option><option value="1">jährlich</option></select></label>
-        <label>Startkapital (€)<input data-f="start" inputmode="decimal" value="0"></label>
-      </div>
-      <p class="hinweis">Einzahlung jeweils am Ende der Periode (nachschüssig).</p>
+  <section id="endwert" hidden>
+    <div class="rubrik">Sparplan · Endwert</div>
+    <div class="liste">
+      <label class="zeile"><span>Einzahlung je Periode (€)</span><input data-f="rate" inputmode="decimal" value="200"></label>
+      <label class="zeile"><span>Zinssatz p.a. (%)</span><input data-f="zins" inputmode="decimal" value="3"></label>
+      <label class="zeile"><span>Dauer (Jahre)</span><input data-f="jahre" inputmode="decimal" value="10"></label>
+      <label class="zeile"><span>Rhythmus</span><select data-f="m">
+        <option value="12">monatlich</option><option value="4">vierteljährlich</option>
+        <option value="2">halbjährlich</option><option value="1">jährlich</option></select></label>
+      <label class="zeile"><span>Startkapital (€)</span><input data-f="start" inputmode="decimal" value="0"></label>
     </div>
+    <p class="hinweis">Einzahlung jeweils am Ende der Periode (nachschüssig).</p>
+
     <p class="fehler" data-fehler hidden></p>
-    <div class="karte"><span class="rubrik">Ergebnis</span><div class="ergebnis" data-ergebnis></div></div>
-    <div class="karte">
-      <div class="kopf"><span class="rubrik">Entwicklung je Jahr</span><button class="knopf" data-export>Excel</button></div>
-      <div class="tabelle" data-tabelle></div>
-    </div>
+    <h2 class="rubrik">Ergebnis</h2>
+    <div class="liste ergebnis" data-ergebnis></div>
+    <h2 class="rubrik">Kontostand je Jahr</h2>
+    <div class="grafik" data-grafik></div>
+    <div class="kopf"><h2 class="rubrik">Entwicklung je Jahr</h2><button class="knopf" data-export>Excel ↓</button></div>
+    <div class="tabelle" data-tabelle></div>
   </section>
 
   <!-- Leasing -->
-  <section id="leasing" data-titel="Leasingplan" hidden>
-    <div class="karte">
-      <span class="rubrik">Leasing</span>
-      <div class="gitter">
-        <label>Kaufpreis (€)<input data-f="preis" inputmode="decimal" value="50.000"></label>
-        <label>Anzahlung (Maxirate)<div class="mit-einheit"><input data-f="anz" inputmode="decimal" value="20"><select data-f="anzE"><option value="%">%</option><option value="€">€</option></select></div></label>
-        <label>Restwert (Kaufoption)<div class="mit-einheit"><input data-f="rw" inputmode="decimal" value="1"><select data-f="rwE"><option value="%">%</option><option value="€">€</option></select></div></label>
-        <label>Zinssatz p.a. (%)<input data-f="zins" inputmode="decimal" value="5"></label>
-        <label>Laufzeit (Monate)<input data-f="monate" inputmode="numeric" value="60"></label>
-        <label>Rhythmus<select data-f="m">
-          <option value="12">monatlich</option><option value="4">vierteljährlich</option>
-          <option value="2">halbjährlich</option><option value="1">jährlich</option></select></label>
-        <label>Vertragsbeginn<input data-f="start" type="date"></label>
-        <label class="schalter"><input data-f="vorsch" type="checkbox" checked>Rate am Periodenanfang (vorschüssig)</label>
-      </div>
-      <p class="hinweis">Prozentangaben beziehen sich auf den Kaufpreis. Beträge netto bzw. so, wie eingegeben.</p>
+  <section id="leasing" hidden>
+    <div class="rubrik">Leasing · Rate aus Zins</div>
+    <div class="liste">
+      <label class="zeile"><span>Kaufpreis (€)</span><input data-f="preis" inputmode="decimal" value="50.000"></label>
+      <label class="zeile"><span>Anzahlung (Maxirate)</span><span class="einheit"><input data-f="anz" inputmode="decimal" value="20"><select data-f="anzE"><option value="%">%</option><option value="€">€</option></select></span></label>
+      <label class="zeile"><span>Restwert (Kaufoption)</span><span class="einheit"><input data-f="rw" inputmode="decimal" value="1"><select data-f="rwE"><option value="%">%</option><option value="€">€</option></select></span></label>
+      <label class="zeile"><span>Zinssatz p.a. (%)</span><input data-f="zins" inputmode="decimal" value="5"></label>
+      <label class="zeile"><span>Laufzeit (Monate)</span><input data-f="monate" inputmode="numeric" value="60"></label>
+      <label class="zeile"><span>Rhythmus</span><select data-f="m">
+        <option value="12">monatlich</option><option value="4">vierteljährlich</option>
+        <option value="2">halbjährlich</option><option value="1">jährlich</option></select></label>
+      <label class="zeile"><span>Vertragsbeginn</span><input data-f="start" type="date"></label>
+      <label class="zeile"><span>Rate am Periodenanfang</span><input data-f="vorsch" type="checkbox" checked></label>
     </div>
+    <p class="hinweis">Prozent vom Kaufpreis. Beträge netto bzw. wie eingegeben.</p>
+
     <p class="fehler" data-fehler hidden></p>
-    <div class="karte"><span class="rubrik">Ergebnis</span><div class="ergebnis" data-ergebnis></div></div>
-    <div class="karte">
-      <div class="kopf"><span class="rubrik">Plan</span><button class="knopf" data-export>Excel</button></div>
-      <div class="tabelle" data-tabelle></div>
-    </div>
+    <h2 class="rubrik">Ergebnis</h2>
+    <div class="liste ergebnis" data-ergebnis></div>
+    <h2 class="rubrik">Verlauf je Jahr</h2>
+    <div class="grafik" data-grafik></div>
+    <div class="kopf"><h2 class="rubrik">Plan</h2><button class="knopf" data-export>Excel ↓</button></div>
+    <div class="tabelle" data-tabelle></div>
   </section>
 
   <footer>
