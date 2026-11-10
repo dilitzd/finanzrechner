@@ -20,5 +20,8 @@ Webapp für GitHub Pages (`https://dilitzd.github.io/finanzrechner/`), fürs iPh
 | `app.js` | Eingaben, Anzeige, Excel-Export |
 | `manifest.webmanifest`, `icon-*.png` | Homescreen-App |
 
+## Neue Fassung veröffentlichen
+Bei jeder Änderung an `calc.js`/`app.js` die Nummer `?v=` in `index.html` erhöhen, sonst lädt das iPhone das alte Skript aus dem Zwischenspeicher.
+
 ## Zum Homescreen
 Safari → Teilen → „Zum Home-Bildschirm“.

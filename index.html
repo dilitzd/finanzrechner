@@ -47,12 +47,12 @@
   .liste { border-top: 1px solid var(--linie); }
   .zeile {
     display: flex; align-items: center; justify-content: space-between; gap: 12px;
-    min-height: 48px; border-bottom: 1px solid var(--linie); font-size: 17px; color: var(--text);
+    min-height: 44px; border-bottom: 1px solid var(--linie); font-size: 14.5px; color: var(--grau);
   }
   .zeile > span:first-child { flex: 1 1 auto; }
   .zeile input, .zeile select {
-    border: 0; background: none; font: inherit; font-weight: 600; color: var(--tinte);
-    text-align: right; padding: 10px 0; min-height: 44px; -webkit-appearance: none; appearance: none;
+    border: 0; background: none; font: inherit; font-size: 15px; font-weight: 500; color: var(--text);
+    text-align: right; padding: 10px 0; min-height: 42px; -webkit-appearance: none; appearance: none;
   }
   .zeile input { width: 9.5em; }
   .zeile input[type="date"] { width: auto; min-width: 8.5em; }
@@ -64,8 +64,8 @@
   .einheit input { width: 6.5em; }
   .einheit select { font-weight: 400; color: var(--grau); }
   .wahl { display: flex; gap: 14px; }
-  .wahl button { border: 0; background: none; font: inherit; font-size: 15px; color: var(--grau); padding: 10px 0; cursor: pointer; }
-  .wahl button.an { color: var(--tinte); font-weight: 600; }
+  .wahl button { border: 0; background: none; font: inherit; font-size: 14px; color: var(--grau); padding: 10px 0; cursor: pointer; }
+  .wahl button.an { color: var(--text); font-weight: 600; }
   .zeile input[type="checkbox"] {
     width: 46px; height: 28px; min-height: 0; border-radius: 14px; background: #D8D4CC; position: relative; cursor: pointer; padding: 0; flex: none;
     transition: background .15s;
@@ -79,10 +79,13 @@
   .fehler { color: #B3261E; font-size: 15px; margin: 18px 0 0; }
 
   /* Ergebnis */
-  .ergebnis .zeile .zahl { font-weight: 600; color: var(--tinte); font-variant-numeric: tabular-nums; white-space: nowrap; text-align: right; }
-  .ergebnis .zeile .zahl small { display: block; font-size: 12.5px; font-weight: 400; color: var(--grau); }
-  .ergebnis .gross { min-height: 64px; }
-  .ergebnis .gross .zahl { font-size: 30px; font-weight: 600; letter-spacing: -.3px; }
+  .ergebnis { display: grid; grid-template-columns: 1fr 1fr; column-gap: 20px; border-top: 1px solid var(--linie); }
+  .erg { padding: 12px 0; border-bottom: 1px solid var(--linie); min-width: 0; }
+  .erg .rubrik { font-size: 11.5px; }
+  .erg .zahl { font-size: 21px; font-weight: 600; color: var(--tinte); font-variant-numeric: tabular-nums; white-space: nowrap; margin-top: 2px; }
+  .erg .zusatz { font-size: 13px; color: var(--grau); margin-top: 1px; }
+  .erg.gross { grid-column: 1 / -1; }
+  .erg.gross .zahl { font-size: 34px; letter-spacing: -.4px; }
 
   /* Grafik */
   .grafik { position: relative; margin-top: 10px; }
@@ -153,7 +156,7 @@
 
     <p class="fehler" data-fehler hidden></p>
     <h2 class="rubrik">Ergebnis</h2>
-    <div class="liste ergebnis" data-ergebnis></div>
+    <div class="ergebnis" data-ergebnis></div>
     <h2 class="rubrik">Verlauf je Jahr</h2>
     <div class="grafik" data-grafik></div>
     <div class="kopf"><h2 class="rubrik">Plan</h2><button class="knopf" data-export>Excel ↓</button></div>
@@ -176,7 +179,7 @@
 
     <p class="fehler" data-fehler hidden></p>
     <h2 class="rubrik">Ergebnis</h2>
-    <div class="liste ergebnis" data-ergebnis></div>
+    <div class="ergebnis" data-ergebnis></div>
     <h2 class="rubrik">Kontostand je Jahr</h2>
     <div class="grafik" data-grafik></div>
     <div class="kopf"><h2 class="rubrik">Entwicklung je Jahr</h2><button class="knopf" data-export>Excel ↓</button></div>
@@ -202,7 +205,7 @@
 
     <p class="fehler" data-fehler hidden></p>
     <h2 class="rubrik">Ergebnis</h2>
-    <div class="liste ergebnis" data-ergebnis></div>
+    <div class="ergebnis" data-ergebnis></div>
     <h2 class="rubrik">Verlauf je Jahr</h2>
     <div class="grafik" data-grafik></div>
     <div class="kopf"><h2 class="rubrik">Plan</h2><button class="knopf" data-export>Excel ↓</button></div>
@@ -214,7 +217,7 @@
     Beträge auf Cent gerundet, Rundungsrest in der letzten Rate. Angaben ohne Gewähr.
   </footer>
 </main>
-<script src="calc.js"></script>
-<script src="app.js"></script>
+<script src="calc.js?v=3"></script>
+<script src="app.js?v=3"></script>
 </body>
 </html>

@@ -61,9 +61,18 @@
   // ---------- Darstellung ----------
   function werte(sek, liste) {
     sek.querySelector("[data-ergebnis]").innerHTML = liste
-      .map((w, i) => `<div class="zeile${i === 0 ? " gross" : ""}"><span>${w.name}</span>` +
-        `<span class="zahl">${w.zahl}${w.zusatz ? `<small>${w.zusatz}</small>` : ""}</span></div>`)
+      .map((w, i) => `<div class="erg${i === 0 ? " gross" : ""}"><div class="rubrik">${w.name}</div>` +
+        `<div class="zahl">${w.zahl}</div>${w.zusatz ? `<div class="zusatz">${w.zusatz}</div>` : ""}</div>`)
       .join("");
+    passen(sek);
+  }
+  // Text nie abschneiden: Schrift verkleinern, bis der Betrag passt
+  function passen(sek) {
+    sek.querySelectorAll(".erg .zahl").forEach((el) => {
+      el.style.fontSize = "";
+      let g = parseFloat(getComputedStyle(el).fontSize);
+      while (el.scrollWidth > el.clientWidth + 1 && g > 12) el.style.fontSize = (g -= 1) + "px";
+    });
   }
 
   // Gestapelte Säulen je Jahr: unten Blau (Tilgung/Kapital/Einzahlungen), oben Bernstein (Zinsen)
@@ -382,6 +391,7 @@
   function zeige(tab) {
     document.querySelectorAll("nav button").forEach((b) => b.setAttribute("aria-selected", String(b.dataset.tab === tab)));
     sektionen.forEach((s) => (s.hidden = s.id !== tab));
+    passen(document.getElementById(tab));
     speicher.schreiben("tab", tab);
   }
   document.querySelector("nav").addEventListener("click", (ev) => {
