@@ -169,6 +169,11 @@
         start: datum(f.start), vorPerioden: zahl(f.vor), sonderBetrag: zahl(f.sBetrag),
         sonderNr: zahl(f.sNr), sonderModus: f.sModus,
       };
+      // Kurzinfo, wenn „Sondertilgung“ zugeklappt ist
+      const info = sek.querySelector("[data-info]");
+      if (info) info.textContent = p.sonderBetrag > 0
+        ? `${fmt0.format(p.sonderBetrag)} € nach Rate ${p.sonderNr}`
+        : "keine";
       const n = Math.round(p.jahre * p.m);
       if ([p.betrag, p.zins, p.jahre, p.vorPerioden, p.sonderBetrag, p.sonderNr].some(Number.isNaN))
         return fehler(sek, "Bitte nur Zahlen eingeben.");
@@ -384,7 +389,18 @@
         seg.querySelectorAll("button").forEach((x) => x.classList.toggle("an", x === b));
         neu();
       }));
-    sek.querySelector("[data-export]").addEventListener("click", () => exportieren(sek));
+    // Excel-Knopf sitzt in der Klapp-Zeile: Klick soll nicht zuklappen
+    sek.querySelector("[data-export]").addEventListener("click", (ev) => {
+      ev.preventDefault();
+      ev.stopPropagation();
+      exportieren(sek);
+    });
+    // Einklappbare Bereiche: Zustand merken
+    sek.querySelectorAll("details[data-klapp]").forEach((d) => {
+      const gemerkt = speicher.lesen("klapp_" + d.dataset.klapp);
+      if (gemerkt !== null) d.open = gemerkt;
+      d.addEventListener("toggle", () => speicher.schreiben("klapp_" + d.dataset.klapp, d.open));
+    });
     berechne(sek);
   });
 

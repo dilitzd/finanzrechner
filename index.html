@@ -102,7 +102,18 @@
   .tipp span { color: var(--grau); }
 
   /* Plan */
-  .kopf { display: flex; justify-content: space-between; align-items: baseline; }
+  /* Einklappbare Bereiche */
+  .klapp > summary {
+    list-style: none; display: flex; align-items: center; gap: 12px; cursor: pointer;
+    margin: 56px 0 12px; min-height: 32px; -webkit-tap-highlight-color: transparent;
+  }
+  .klapp > summary::-webkit-details-marker { display: none; }
+  .klapp > summary h2 { margin: 0; }
+  .klapp .info { flex: 1; font-size: 13px; color: var(--grau); text-align: right; line-height: 1.3; }
+  .klapp[open] .info { visibility: hidden; }
+  .klapp .pfeil { width: 8px; height: 8px; border-right: 1.6px solid var(--sand); border-bottom: 1.6px solid var(--sand);
+    transform: rotate(-45deg); transition: transform .15s; flex: none; margin-right: 3px; }
+  .klapp[open] .pfeil { transform: rotate(45deg) translate(-2px, -2px); }
   .knopf { border: 0; background: none; font: inherit; font-size: 15px; font-weight: 600; color: var(--sand); padding: 8px 0; cursor: pointer; }
   .tabelle { overflow: auto; max-height: 70vh; margin-top: 4px; -webkit-overflow-scrolling: touch; }
   table { border-collapse: collapse; width: 100%; font-size: 13.5px; font-variant-numeric: tabular-nums; }
@@ -146,22 +157,28 @@
     </div>
     <p class="hinweis">Laufzeit = Tilgungsphase; in der Vorfinanzierung nur Zinsen.</p>
 
-    <h2 class="rubrik">Sondertilgung</h2>
-    <div class="liste">
-      <label class="zeile"><span>Betrag (€)</span><input data-f="sBetrag" inputmode="decimal" value="0"></label>
-      <label class="zeile"><span>Nach Rate Nr.</span><input data-f="sNr" inputmode="numeric" value="0"></label>
-      <div class="zeile"><span>Danach</span><div class="wahl" data-f="sModus">
-        <button type="button" data-v="rate" class="an">Rate senken</button>
-        <button type="button" data-v="laufzeit">Laufzeit kürzen</button></div></div>
-    </div>
+    <details class="klapp" data-klapp="tilgung-sonder">
+      <summary><h2 class="rubrik">Sondertilgung</h2><span class="info" data-info></span><span class="pfeil" aria-hidden="true"></span></summary>
+      <div class="liste">
+        <label class="zeile"><span>Betrag (€)</span><input data-f="sBetrag" inputmode="decimal" value="0"></label>
+        <label class="zeile"><span>Nach Rate Nr.</span><input data-f="sNr" inputmode="numeric" value="0"></label>
+        <div class="zeile"><span>Danach</span><div class="wahl" data-f="sModus">
+          <button type="button" data-v="rate" class="an">Rate senken</button>
+          <button type="button" data-v="laufzeit">Laufzeit kürzen</button></div></div>
+      </div>
+    </details>
 
     <p class="fehler" data-fehler hidden></p>
     <h2 class="rubrik">Ergebnis</h2>
     <div class="ergebnis" data-ergebnis></div>
-    <h2 class="rubrik">Verlauf je Jahr</h2>
-    <div class="grafik" data-grafik></div>
-    <div class="kopf"><h2 class="rubrik">Plan</h2><button class="knopf" data-export>Excel ↓</button></div>
-    <div class="tabelle" data-tabelle></div>
+    <details class="klapp" data-klapp="tilgung-grafik" open>
+      <summary><h2 class="rubrik">Verlauf je Jahr</h2><span class="info"></span><span class="pfeil" aria-hidden="true"></span></summary>
+      <div class="grafik" data-grafik></div>
+    </details>
+    <details class="klapp" data-klapp="tilgung-plan">
+      <summary><h2 class="rubrik">Plan</h2><span class="info"></span><button class="knopf" type="button" data-export>Excel ↓</button><span class="pfeil" aria-hidden="true"></span></summary>
+      <div class="tabelle" data-tabelle></div>
+    </details>
   </section>
 
   <!-- Endwert -->
@@ -181,10 +198,14 @@
     <p class="fehler" data-fehler hidden></p>
     <h2 class="rubrik">Ergebnis</h2>
     <div class="ergebnis" data-ergebnis></div>
-    <h2 class="rubrik">Kontostand je Jahr</h2>
-    <div class="grafik" data-grafik></div>
-    <div class="kopf"><h2 class="rubrik">Entwicklung je Jahr</h2><button class="knopf" data-export>Excel ↓</button></div>
-    <div class="tabelle" data-tabelle></div>
+    <details class="klapp" data-klapp="endwert-grafik" open>
+      <summary><h2 class="rubrik">Kontostand je Jahr</h2><span class="info"></span><span class="pfeil" aria-hidden="true"></span></summary>
+      <div class="grafik" data-grafik></div>
+    </details>
+    <details class="klapp" data-klapp="endwert-plan">
+      <summary><h2 class="rubrik">Entwicklung je Jahr</h2><span class="info"></span><button class="knopf" type="button" data-export>Excel ↓</button><span class="pfeil" aria-hidden="true"></span></summary>
+      <div class="tabelle" data-tabelle></div>
+    </details>
   </section>
 
   <!-- Leasing -->
@@ -207,10 +228,14 @@
     <p class="fehler" data-fehler hidden></p>
     <h2 class="rubrik">Ergebnis</h2>
     <div class="ergebnis" data-ergebnis></div>
-    <h2 class="rubrik">Verlauf je Jahr</h2>
-    <div class="grafik" data-grafik></div>
-    <div class="kopf"><h2 class="rubrik">Plan</h2><button class="knopf" data-export>Excel ↓</button></div>
-    <div class="tabelle" data-tabelle></div>
+    <details class="klapp" data-klapp="leasing-grafik" open>
+      <summary><h2 class="rubrik">Verlauf je Jahr</h2><span class="info"></span><span class="pfeil" aria-hidden="true"></span></summary>
+      <div class="grafik" data-grafik></div>
+    </details>
+    <details class="klapp" data-klapp="leasing-plan">
+      <summary><h2 class="rubrik">Plan</h2><span class="info"></span><button class="knopf" type="button" data-export>Excel ↓</button><span class="pfeil" aria-hidden="true"></span></summary>
+      <div class="tabelle" data-tabelle></div>
+    </details>
   </section>
 
   <footer>
@@ -218,7 +243,7 @@
     Beträge auf Cent gerundet, Rundungsrest in der letzten Rate. Angaben ohne Gewähr.
   </footer>
 </main>
-<script src="calc.js?v=3"></script>
-<script src="app.js?v=3"></script>
+<script src="calc.js?v=4"></script>
+<script src="app.js?v=4"></script>
 </body>
 </html>
